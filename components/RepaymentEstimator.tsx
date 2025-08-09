@@ -41,6 +41,8 @@ function toUrduDigits(input: string): string {
 }
 
 function formatNumberByLanguage(value: number, language: Language): string {
+  if(language !== 'ur') return value.toString();
+  
   // Use ASCII digits first so our explicit mapping is always applied
   const base = value.toLocaleString('en-PK');
   if (language !== 'ur') return base;
