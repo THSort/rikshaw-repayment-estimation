@@ -9,10 +9,18 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo/metro-runtime": "~5.0.4",
+    "@miblanchard/react-native-slider": "^2.6.0",
+    "@react-native-community/slider": "^4.5.7",
     "expo": "~53.0.20",
+    "expo-asset": "~11.1.7",
+    "expo-image-manipulator": "~13.1.7",
     "expo-status-bar": "~2.2.3",
     "react": "19.0.0",
-    "react-native": "0.79.5"
+    "react-dom": "19.0.0",
+    "react-native": "0.79.5",
+    "react-native-safe-area-context": "^5.6.0",
+    "react-native-web": "^0.20.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
