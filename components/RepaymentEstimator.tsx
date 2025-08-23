@@ -103,6 +103,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
   const [kilometers, setKilometers] = useState<number>(clamp(initialKilometers, 0, MAX_KM));
   const [sliderValue, setSliderValue] = useState<number>(kmToSlider(clamp(initialKilometers, 0, MAX_KM), MAX_KM));
   const [imageLoaded, setImageLoaded] = useState<boolean>(false);
+  const [imageLoadedOnce, setImageLoadedOnce] = useState<boolean>(false);
   const t = useMemo(() => getTranslations(lang), [lang]);
 
   const repayment = useMemo(() => calculateRepayment(kilometers), [kilometers]);
@@ -243,19 +244,26 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
                       <View style={[styles.fallbackThumb, { backgroundColor: trackColor, opacity: imageLoaded ? 0 : 1 }]} />
                       
                       {/* Rickshaw image (fades in when loaded) */}
-                      {/* <Image
-                        key={trackColor} // Force re-render when color changes
-                        source={require('../assets/rickshaw.png')}
-                        style={[
-                          styles.rickshawImage, 
-                          { 
-                            tintColor: trackColor,
-                            opacity: imageLoaded ? 1 : 0
-                          }
-                        ]}
-                        onLoad={() => setImageLoaded(true)}
-                        onError={() => setImageLoaded(false)}
-                      /> */}
+                       <Image
+                         source={require('../assets/rickshaw.png')}
+                         style={[
+                           styles.rickshawImage, 
+                           { 
+                             tintColor: trackColor,
+                             opacity: imageLoadedOnce ? 1 : 0
+                           }
+                         ]}
+                         onLoad={() => {
+                           if (!imageLoadedOnce) {
+                             setImageLoaded(true);
+                             setImageLoadedOnce(true);
+                           }
+                         }}
+                         onError={() => {
+                           setImageLoaded(false);
+                           setImageLoadedOnce(false);
+                         }}
+                       />
                     </View>
                 )}
                   minimumTrackTintColor={trackColor}
