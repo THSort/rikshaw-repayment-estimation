@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     width: 2,
     backgroundColor: 'transparent',
     opacity: 1,
-    // borderStyle: 'dashed',
+    borderStyle: 'dashed',
     borderWidth: 0,
     borderLeftWidth: 2,
     borderLeftColor: '#6B7280',
