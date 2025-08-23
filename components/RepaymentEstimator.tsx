@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Platform, Image, TouchableOpacity } from 'react-native';
 import { Slider } from '@miblanchard/react-native-slider';
 import { getTranslations, Language } from '../i18n';
+import DashedLine from 'react-native-dashed-line';
 
 export type RepaymentEstimatorProps = {
   initialKilometers?: number;
@@ -262,8 +263,11 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
                   thumbTintColor={trackColor}
                 />
               {/* Boundary markers */}
-              <View style={[styles.boundaryLine, { marginLeft: 30, left: `${lowerBoundPosition}%` }]} />
-              <View style={[styles.boundaryLine, { left: `${upperBoundPosition}%` }]} />
+              {/* <View style={[styles.boundaryLine, { marginLeft: 30, left: `${lowerBoundPosition}%` }]} /> */}
+              <DashedLine dashColor='gray' style={[styles.boundaryLine, { marginLeft: 30, left: `${lowerBoundPosition}%` }]} axis='vertical' dashLength={5} />
+
+              {/* <View style={[styles.boundaryLine, { left: `${upperBoundPosition}%` }]} /> */}
+              <DashedLine dashColor='gray' style={[styles.boundaryLine, { left: `${upperBoundPosition}%` }]}  axis='vertical' dashLength={5} />
             </View>
           </View>
         </View>
@@ -374,10 +378,10 @@ const styles = StyleSheet.create({
     width: 2,
     backgroundColor: 'transparent',
     opacity: 1,
-    borderStyle: 'dashed',
+    // borderStyle: 'dashed',
     borderWidth: 0,
-    borderLeftWidth: 2,
-    borderLeftColor: '#6B7280',
+    // borderLeftWidth: 2,
+    // borderLeftColor: '#6B7280',
     borderRightWidth: 0,
     borderTopWidth: 0,
     borderBottomWidth: 0,
