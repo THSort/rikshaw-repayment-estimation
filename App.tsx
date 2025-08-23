@@ -7,6 +7,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 
 function AppInner() {
   const [language, setLanguage] = useState<Language>('ur');
+  const [currentColor, setCurrentColor] = useState<string>('#8B5CF6'); // default purple
   const t = useMemo(() => getTranslations(language), [language]);
   const insets = useSafeAreaInsets();
 
@@ -14,19 +15,33 @@ function AppInner() {
     setLanguage((prev: Language) => (prev === 'ur' ? 'en' : 'ur'));
   };
 
+  const handleColorChange = (color: string) => {
+    setCurrentColor(color);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="light" />
       <View style={styles.container}>
         <View style={styles.content}>
-          <RepaymentEstimator initialKilometers={0} lang={language} />
+          <RepaymentEstimator 
+            initialKilometers={0} 
+            lang={language} 
+            onColorChange={handleColorChange}
+          />
         </View>
       </View>
       <TouchableOpacity
         onPress={toggleLanguage}
         accessibilityRole="button"
         accessibilityLabel={t.toggleLanguageA11y}
-        style={[styles.fabToggle, { bottom: (insets.bottom || 0) + 16 }]}
+        style={[
+          styles.fabToggle, 
+          { 
+            bottom: (insets.bottom || 0) + 16,
+            backgroundColor: currentColor
+          }
+        ]}
       >
         <Text style={styles.fabText}>{language === 'ur' ? 'EN' : 'اردو'}</Text>
       </TouchableOpacity>
@@ -45,11 +60,11 @@ export default function App() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#0B0F14',
+    backgroundColor: '#FFFFFF',
   },
   container: {
     flex: 1,
-    backgroundColor: '#0B0F14',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
   },
   content: {
@@ -63,7 +78,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 999,
-    backgroundColor: '#3B82F6',
   },
   fabText: {
     color: '#FFFFFF',

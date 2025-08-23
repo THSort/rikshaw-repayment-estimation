@@ -1,11 +1,12 @@
-import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Platform, Image } from 'react-native';
+import React, { useMemo, useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Platform, Image, TouchableOpacity } from 'react-native';
 import { Slider } from '@miblanchard/react-native-slider';
 import { getTranslations, Language } from '../i18n';
 
 export type RepaymentEstimatorProps = {
   initialKilometers?: number;
   onValueChange?: (kilometers: number, repayment: number) => void;
+  onColorChange?: (color: string) => void;
   lang?: Language;
 };
 
@@ -55,12 +56,51 @@ function formatNumberByLanguage(value: number, language: Language): string {
   return `\u2067${withArabicSeparator}\u2069`;
 }
 
+
+
+// Hybrid mapping functions for finer control up to 1000km
+function sliderToKm(sliderValue: number, maxKm: number): number {
+  // For values up to 1000km, use half the slider range (0-0.5)
+  // For values 1000km-maxKm, use the other half (0.5-1.0)
+  const breakPoint = 0.5; // 50% of slider for 0-1000km
+  const lowRange = 1000;
+  const highRange = maxKm - lowRange;
+  
+  if (sliderValue <= breakPoint) {
+    // First 50% of slider covers 0-1000km with fine control
+    return (sliderValue / breakPoint) * lowRange;
+  } else {
+    // Remaining 50% of slider covers 1000km-maxKm with normal control
+    const remainingSlider = (sliderValue - breakPoint) / (1 - breakPoint);
+    return lowRange + (remainingSlider * highRange);
+  }
+}
+
+function kmToSlider(km: number, maxKm: number): number {
+  // Convert km value to slider position (0-1)
+  const breakPoint = 0.5;
+  const lowRange = 1000;
+  
+  if (km <= lowRange) {
+    // 0-1000km maps to first 50% of slider
+    return (km / lowRange) * breakPoint;
+  } else {
+    // 1000km-maxKm maps to remaining 50% of slider
+    const highRange = maxKm - lowRange;
+    const highRangeRatio = (km - lowRange) / highRange;
+    return breakPoint + (highRangeRatio * (1 - breakPoint));
+  }
+}
+
 export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
   initialKilometers = 0,
   onValueChange,
+  onColorChange,
   lang = 'ur',
 }) => {
-  const [kilometers, setKilometers] = useState<number>(clamp(initialKilometers, 0, 3800));
+  const MAX_KM = 4000; // Increased from 3800
+  const [kilometers, setKilometers] = useState<number>(clamp(initialKilometers, 0, MAX_KM));
+  const [sliderValue, setSliderValue] = useState<number>(kmToSlider(clamp(initialKilometers, 0, MAX_KM), MAX_KM));
   const t = useMemo(() => getTranslations(lang), [lang]);
 
   const repayment = useMemo(() => calculateRepayment(kilometers), [kilometers]);
@@ -71,10 +111,79 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
     return '#10B981'; // emerald-500
   }, [kilometers]);
 
-  const handleChange = (value: number) => {
-    const rounded = Math.round(value);
-    setKilometers(rounded);
-    if (onValueChange) onValueChange(rounded, calculateRepayment(rounded));
+  // Notify parent about color changes
+  useEffect(() => {
+    if (onColorChange) {
+      onColorChange(trackColor);
+    }
+  }, [trackColor, onColorChange]);
+
+  // Calculate boundary positions for repayment bounds using hybrid mapping
+  const lowerBoundKm = 200; // where repayment stops being minimum
+  const upperBoundKm = 3200; // where repayment stops increasing
+  const lowerBoundPosition = kmToSlider(lowerBoundKm, MAX_KM) * 100;
+  const upperBoundPosition = kmToSlider(upperBoundKm, MAX_KM) * 100;
+
+  const handleSliderChange = (sliderVal: number) => {
+    const kmValue = sliderToKm(sliderVal, MAX_KM);
+    const rounded = Math.round(kmValue);
+    const clamped = clamp(rounded, 0, MAX_KM);
+    setKilometers(clamped);
+    setSliderValue(kmToSlider(clamped, MAX_KM));
+    if (onValueChange) onValueChange(clamped, calculateRepayment(clamped));
+  };
+
+  const handleDirectKmChange = (kmValue: number) => {
+    const clamped = clamp(kmValue, 0, MAX_KM);
+    setKilometers(clamped);
+    setSliderValue(kmToSlider(clamped, MAX_KM));
+    if (onValueChange) onValueChange(clamped, calculateRepayment(clamped));
+  };
+
+  const handleIncrement = () => {
+    // Fixed increments based on value ranges
+    let increment;
+    if (kilometers < 250) {
+      increment = 5;
+    } else if (kilometers < 1000) {
+      increment = 50;
+    } else {
+      increment = 100;
+    }
+    
+    // If current value is not divisible by increment, snap to nearest divisible value first
+    if (kilometers % increment !== 0) {
+      const snapped = Math.ceil(kilometers / increment) * increment; // Round up to next multiple
+      const clamped = Math.min(snapped, MAX_KM);
+      handleDirectKmChange(clamped);
+      return;
+    }
+    
+    const newValue = Math.min(kilometers + increment, MAX_KM);
+    handleDirectKmChange(newValue);
+  };
+
+  const handleDecrement = () => {
+    // Fixed decrements based on value ranges
+    let decrement;
+    if (kilometers <= 250) {
+      decrement = 5;
+    } else if (kilometers <= 1000) {
+      decrement = 50;
+    } else {
+      decrement = 100;
+    }
+    
+    // If current value is not divisible by decrement, snap to nearest divisible value first
+    if (kilometers % decrement !== 0) {
+      const snapped = Math.floor(kilometers / decrement) * decrement; // Round down to previous multiple
+      const clamped = Math.max(snapped, 0);
+      handleDirectKmChange(clamped);
+      return;
+    }
+    
+    const newValue = Math.max(kilometers - decrement, 0);
+    handleDirectKmChange(newValue);
   };
 
   return (
@@ -83,33 +192,68 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
         {formatNumberByLanguage(kilometers, lang)} {t.kmSuffix}
       </Text>
 
-      <View style={styles.sliderRow}>
-        <Text style={[styles.endLabel, lang === 'ur' && styles.rtlText]} numberOfLines={1}>
-          {formatNumberByLanguage(0, lang)}
-        </Text>
-        <View style={styles.sliderWrapper}>
-          <Slider
-            value={kilometers}
-            onValueChange={(v: number | number[]) => handleChange(Array.isArray(v) ? v[0] : v)}
-            minimumValue={0}
-            maximumValue={3800}
-            step={1}
-            // trackStyle={{ height: 8 }}
-            thumbStyle={{ width: 35, height: 25 }}
-            renderThumbComponent={() => (
-              <Image
-                  source={require('../assets/rickshaw.png')}
-                  style={{ width: 35, height: 25, tintColor: trackColor, }}
-                />
-            )}
-            minimumTrackTintColor={trackColor}
-            maximumTrackTintColor="#374151"
-            thumbTintColor={trackColor}
-          />
+      <View style={styles.sliderContainer}>
+        <View style={styles.sliderRow}>
+          <View style={styles.sliderWrapper}>
+            <View style={styles.sliderWithBounds}>
+              <Slider
+                value={sliderValue}
+                onValueChange={(v: number | number[]) => handleSliderChange(Array.isArray(v) ? v[0] : v)}
+                minimumValue={0}
+                maximumValue={1}
+                step={0.001}
+                animateTransitions
+                thumbStyle={{ width: 35, height: 25 }}
+                renderThumbComponent={() => (
+                  <Image
+                      source={require('../assets/rickshaw.png')}
+                      style={{ width: 35, height: 25, tintColor: trackColor, }}
+                    />
+                )}
+                minimumTrackTintColor={trackColor}
+                maximumTrackTintColor="#374151"
+                thumbTintColor={trackColor}
+              />
+              {/* Boundary markers */}
+              <View style={[styles.boundaryLine, { marginLeft: 30, left: `${lowerBoundPosition}%` }]} />
+              <View style={[styles.boundaryLine, { left: `${upperBoundPosition}%` }]} />
+            </View>
+          </View>
         </View>
-        <Text style={[styles.endLabel, lang === 'ur' && styles.rtlText]} numberOfLines={1}>
-          {formatNumberByLanguage(3800, lang)}
-        </Text>
+      </View>
+
+      <View style={styles.buttonRow}>
+        <TouchableOpacity
+          style={[
+            styles.adjustButton, 
+            { 
+              backgroundColor: trackColor,
+              opacity: kilometers <= 0 ? 0.3 : 1 
+            }
+          ]}
+          onPress={handleDecrement}
+          disabled={kilometers <= 0}
+          accessibilityRole="button"
+          accessibilityLabel="Decrease distance"
+        >
+          <Text style={styles.adjustButtonText}>−</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[
+            styles.adjustButton, 
+            { 
+              backgroundColor: trackColor,
+              opacity: kilometers >= MAX_KM ? 0.3 : 1 
+            }
+          ]}
+          onPress={handleIncrement}
+          disabled={kilometers >= MAX_KM}
+          accessibilityRole="button"
+          accessibilityLabel="Increase distance"
+        >
+          <Text style={styles.adjustButtonText}>+</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.resultBlock}>
@@ -125,7 +269,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingTop: 24,
     paddingBottom: 8,
   },
@@ -134,16 +278,62 @@ const styles = StyleSheet.create({
     fontWeight: Platform.OS === 'web' ? '700' : '800',
     textAlign: 'center',
     marginBottom: 16,
-    color: '#F3F4F6',
+    color: '#1F2937',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 24,
+    paddingHorizontal: 16,
+  },
+  adjustButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  adjustButtonText: {
+    color: '#FFFFFF',
+    fontSize: 24,
+    fontWeight: 'bold',
+    lineHeight: 24,
+  },
+  sliderContainer: {
+    width: '100%',
+    paddingHorizontal: 16,
   },
   sliderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    width: '100%',
   },
   sliderWrapper: {
-    flex: 1,
+    width: '100%',
     transform: [{ scaleY: Platform.OS === 'android' ? 1.4 : Platform.OS === 'ios' ? 1.4 : 1.25 }],
+  },
+  sliderWithBounds: {
+    position: 'relative',
+    width: '100%',
+  },
+  boundaryLine: {
+    position: 'absolute',
+    top: -10,
+    bottom: -10,
+    width: 2,
+    backgroundColor: 'transparent',
+    opacity: 0.7,
+    borderStyle: 'dotted',
+    borderWidth: 2,
+    borderColor: '#9CA3AF',
+    borderLeftWidth: 2,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+    borderBottomWidth: 0,
   },
   slider: {
     flex: 1,
@@ -159,12 +349,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  endLabel: {
-    width: 54,
-    textAlign: 'center',
-    color: '#9CA3AF',
-    fontSize: 20,
-  },
   rtlText: {
     writingDirection: 'rtl',
   },
@@ -173,15 +357,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 28,
     fontWeight: '600',
     marginBottom: 8,
-    color: '#D1D5DB',
+    color: '#374151',
   },
   repaymentText: {
     fontSize: 40,
     fontWeight: Platform.OS === 'web' ? '800' : '900',
-    color: '#FFFFFF',
+    color: '#1F2937',
     textAlign: 'center',
   },
 });
