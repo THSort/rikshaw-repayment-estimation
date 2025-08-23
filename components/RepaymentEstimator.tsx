@@ -110,7 +110,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
     if (kilometers < 200) return '#8B5CF6'; // purple-500
     if (kilometers < 3200) return '#3B82F6'; // blue-500
     return '#10B981'; // emerald-500
-  }, [kilometers]);
+  }, [kilometers, sliderValue]);
 
   // Calculate boundary positions for repayment bounds using hybrid mapping
   const lowerBoundKm = 200; // where repayment stops being minimum
@@ -236,6 +236,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
                       
                       {/* Rickshaw image (fades in when loaded) */}
                        <Image
+                       key={trackColor}
                          source={require('../assets/rickshaw.png')}
                          style={[
                            styles.rickshawImage, 
