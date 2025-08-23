@@ -101,6 +101,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
   const MAX_KM = 4000; // Increased from 3800
   const [kilometers, setKilometers] = useState<number>(clamp(initialKilometers, 0, MAX_KM));
   const [sliderValue, setSliderValue] = useState<number>(kmToSlider(clamp(initialKilometers, 0, MAX_KM), MAX_KM));
+  const [imageLoaded, setImageLoaded] = useState<boolean>(false);
   const t = useMemo(() => getTranslations(lang), [lang]);
 
   const repayment = useMemo(() => calculateRepayment(kilometers), [kilometers]);
@@ -237,10 +238,24 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
                 animateTransitions
                 thumbStyle={{ width: 35, height: 25 }}
                 renderThumbComponent={() => (
-                  <Image
+                  <View style={styles.thumbContainer}>
+                    {/* Fallback thumb (always visible) */}
+                    <View style={[styles.fallbackThumb, { backgroundColor: trackColor, opacity: imageLoaded ? 0 : 1 }]} />
+                    
+                    {/* Rickshaw image (fades in when loaded) */}
+                    <Image
                       source={require('../assets/rickshaw.png')}
-                      style={{ width: 35, height: 25, tintColor: trackColor, }}
+                      style={[
+                        styles.rickshawImage, 
+                        { 
+                          tintColor: trackColor,
+                          opacity: imageLoaded ? 1 : 0
+                        }
+                      ]}
+                      onLoad={() => setImageLoaded(true)}
+                      onError={() => setImageLoaded(false)}
                     />
+                  </View>
                 )}
                 minimumTrackTintColor={trackColor}
                 maximumTrackTintColor="#374151"
@@ -370,6 +385,29 @@ const styles = StyleSheet.create({
   slider: {
     flex: 1,
     height: 168,
+  },
+  thumbContainer: {
+    position: 'relative',
+    width: 35,
+    height: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fallbackThumb: {
+    position: 'absolute',
+    width: 35,
+    height: 35,
+    borderRadius: 100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  rickshawImage: {
+    position: 'absolute',
+    width: 45, //35
+    height: 35, //25
   },
   thumbOuter: {
     width: 48,
