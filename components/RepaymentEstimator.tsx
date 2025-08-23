@@ -229,38 +229,38 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
         <View style={styles.sliderRow}>
           <View style={styles.sliderWrapper}>
             <View style={styles.sliderWithBounds}>
-              <Slider
-                value={sliderValue}
-                onValueChange={(v: number | number[]) => handleSliderChange(Array.isArray(v) ? v[0] : v)}
-                minimumValue={0}
-                maximumValue={1}
-                step={0.001}
-                animateTransitions
-                thumbStyle={{ width: 35, height: 25 }}
-                renderThumbComponent={() => (
-                  <View style={styles.thumbContainer}>
-                    {/* Fallback thumb (always visible) */}
-                    <View style={[styles.fallbackThumb, { backgroundColor: trackColor, opacity: imageLoaded ? 0 : 1 }]} />
-                    
-                    {/* Rickshaw image (fades in when loaded) */}
-                    <Image
-                      source={require('../assets/rickshaw.png')}
-                      style={[
-                        styles.rickshawImage, 
-                        { 
-                          tintColor: trackColor,
-                          opacity: imageLoaded ? 1 : 0
-                        }
-                      ]}
-                      onLoad={() => setImageLoaded(true)}
-                      onError={() => setImageLoaded(false)}
-                    />
-                  </View>
+                <Slider
+                  value={sliderValue}
+                  onValueChange={(v: number | number[]) => handleSliderChange(Array.isArray(v) ? v[0] : v)}
+                  minimumValue={0}
+                  maximumValue={1}
+                  step={0.001}
+                  thumbStyle={{ width: 35, height: 25 }}
+                  renderThumbComponent={() => (
+                    <View style={styles.thumbContainer}>
+                      {/* Fallback thumb (always visible) */}
+                      <View style={[styles.fallbackThumb, { backgroundColor: trackColor, opacity: imageLoaded ? 0 : 1 }]} />
+                      
+                      {/* Rickshaw image (fades in when loaded) */}
+                      <Image
+                        key={trackColor} // Force re-render when color changes
+                        source={require('../assets/rickshaw.png')}
+                        style={[
+                          styles.rickshawImage, 
+                          { 
+                            tintColor: trackColor,
+                            opacity: imageLoaded ? 1 : 0
+                          }
+                        ]}
+                        onLoad={() => setImageLoaded(true)}
+                        onError={() => setImageLoaded(false)}
+                      />
+                    </View>
                 )}
-                minimumTrackTintColor={trackColor}
-                maximumTrackTintColor="#374151"
-                thumbTintColor={trackColor}
-              />
+                  minimumTrackTintColor={trackColor}
+                  maximumTrackTintColor="#374151"
+                  thumbTintColor={trackColor}
+                />
               {/* Boundary markers */}
               <View style={[styles.boundaryLine, { marginLeft: 30, left: `${lowerBoundPosition}%` }]} />
               <View style={[styles.boundaryLine, { left: `${upperBoundPosition}%` }]} />
@@ -371,13 +371,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -10,
     bottom: -10,
-    width: 3,
+    width: 2,
     backgroundColor: 'transparent',
     opacity: 1,
-    borderStyle: 'dotted',
-    borderWidth: 3,
-    borderColor: '#6B7280',
-    borderLeftWidth: 3,
+    borderStyle: 'dashed',
+    borderWidth: 0,
+    borderLeftWidth: 2,
+    borderLeftColor: '#6B7280',
     borderRightWidth: 0,
     borderTopWidth: 0,
     borderBottomWidth: 0,
