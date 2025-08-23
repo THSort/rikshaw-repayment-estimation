@@ -242,7 +242,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
                       <View style={[styles.fallbackThumb, { backgroundColor: trackColor, opacity: imageLoaded ? 0 : 1 }]} />
                       
                       {/* Rickshaw image (fades in when loaded) */}
-                      <Image
+                      {/* <Image
                         key={trackColor} // Force re-render when color changes
                         source={require('../assets/rickshaw.png')}
                         style={[
@@ -254,7 +254,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
                         ]}
                         onLoad={() => setImageLoaded(true)}
                         onError={() => setImageLoaded(false)}
-                      />
+                      /> */}
                     </View>
                 )}
                   minimumTrackTintColor={trackColor}
