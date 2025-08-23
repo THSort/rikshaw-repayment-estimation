@@ -373,6 +373,7 @@ const styles = StyleSheet.create({
   },
   boundaryLine: {
     position: 'absolute',
+    zIndex: -1,
     top: -10,
     bottom: -10,
     width: 2,
