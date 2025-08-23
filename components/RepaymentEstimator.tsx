@@ -102,6 +102,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
   const [sliderValue, setSliderValue] = useState<number>(kmToSlider(clamp(initialKilometers, 0, MAX_KM), MAX_KM));
   const [imageLoaded, setImageLoaded] = useState<boolean>(false);
   const [imageLoadedOnce, setImageLoadedOnce] = useState<boolean>(false);
+  const [isSliderActive, setIsSliderActive] = useState<boolean>(false);
   const t = useMemo(() => getTranslations(lang), [lang]);
 
   const repayment = useMemo(() => calculateRepayment(kilometers), [kilometers]);
@@ -225,6 +226,8 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
                 <Slider
                   value={sliderValue}
                   onValueChange={(v: number | number[]) => handleSliderChange(Array.isArray(v) ? v[0] : v)}
+                  onSlidingStart={() => setIsSliderActive(true)}
+                  onSlidingComplete={() => setIsSliderActive(false)}
                   minimumValue={0}
                   maximumValue={1}
                   step={0.001}
@@ -232,11 +235,18 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
                   renderThumbComponent={() => (
                     <View style={styles.thumbContainer}>
                       {/* Fallback thumb (always visible) */}
-                      <View style={[styles.fallbackThumb, { backgroundColor: trackColor, opacity: imageLoaded ? 0 : 1 }]} />
+                      <View style={[
+                        styles.fallbackThumb, 
+                        { 
+                          backgroundColor: trackColor, 
+                          opacity: imageLoaded ? 0 : 1,
+                          borderColor: (!imageLoaded && isSliderActive) ? '#000000' : 'transparent',
+                          borderWidth: (!imageLoaded && isSliderActive) ? 2 : 0
+                        }
+                      ]} />
                       
                       {/* Rickshaw image (fades in when loaded) */}
-                       <Image
-                       key={trackColor}
+                       {Platform.OS !== 'ios' && <Image
                          source={require('../assets/rickshaw.png')}
                          style={[
                            styles.rickshawImage, 
@@ -255,7 +265,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
                            setImageLoaded(false);
                            setImageLoadedOnce(false);
                          }}
-                       />
+                       />}
                     </View>
                 )}
                   minimumTrackTintColor={trackColor}
@@ -403,7 +413,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     backgroundColor: 'transparent',
     width: 35,
-    height: 35,
+    height: 34,
     borderRadius: 100,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -412,6 +422,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   rickshawImage: {
+    objectFit:'contain',
     position: 'absolute',
     width: 45, //35
     height: 35, //25
