@@ -7,7 +7,6 @@ import DashedLine from 'react-native-dashed-line';
 export type RepaymentEstimatorProps = {
   initialKilometers?: number;
   onValueChange?: (kilometers: number, repayment: number) => void;
-  onColorChange?: (color: string) => void;
   lang?: Language;
 };
 
@@ -96,7 +95,6 @@ function kmToSlider(km: number, maxKm: number): number {
 export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
   initialKilometers = 0,
   onValueChange,
-  onColorChange,
   lang = 'ur',
 }) => {
   const MAX_KM = 4000; // Increased from 3800
@@ -113,13 +111,6 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
     if (kilometers < 3200) return '#3B82F6'; // blue-500
     return '#10B981'; // emerald-500
   }, [kilometers]);
-
-  // Notify parent about color changes
-  useEffect(() => {
-    if (onColorChange) {
-      onColorChange(trackColor);
-    }
-  }, [trackColor, onColorChange]);
 
   // Calculate boundary positions for repayment bounds using hybrid mapping
   const lowerBoundKm = 200; // where repayment stops being minimum

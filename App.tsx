@@ -7,16 +7,11 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 
 function AppInner() {
   const [language, setLanguage] = useState<Language>('ur');
-  const [currentColor, setCurrentColor] = useState<string>('#8B5CF6'); // default purple
   const t = useMemo(() => getTranslations(language), [language]);
   const insets = useSafeAreaInsets();
 
   const toggleLanguage = () => {
     setLanguage((prev: Language) => (prev === 'ur' ? 'en' : 'ur'));
-  };
-
-  const handleColorChange = (color: string) => {
-    setCurrentColor(color);
   };
 
   return (
@@ -26,8 +21,7 @@ function AppInner() {
         <View style={styles.content}>
           <RepaymentEstimator 
             initialKilometers={0} 
-            lang={language} 
-            onColorChange={handleColorChange}
+            lang={language}
           />
         </View>
       </View>
@@ -35,13 +29,7 @@ function AppInner() {
         onPress={toggleLanguage}
         accessibilityRole="button"
         accessibilityLabel={t.toggleLanguageA11y}
-        style={[
-          styles.fabToggle, 
-          { 
-            bottom: (insets.bottom || 0) + 16,
-            backgroundColor: currentColor
-          }
-        ]}
+        style={[styles.fabToggle, { bottom: (insets.bottom || 0) + 16 }]}
       >
         <Text style={styles.fabText}>{language === 'ur' ? 'EN' : 'اردو'}</Text>
       </TouchableOpacity>
@@ -78,6 +66,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 999,
+    backgroundColor: '#374151',
   },
   fabText: {
     color: '#FFFFFF',
