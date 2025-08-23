@@ -105,6 +105,15 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
   const [isSliderActive, setIsSliderActive] = useState<boolean>(false);
   const t = useMemo(() => getTranslations(lang), [lang]);
 
+  // Check if running on iOS (including iOS Safari on web)
+  const isIOS = useMemo(() => {
+    if (Platform.OS === 'ios') return true;
+    if (Platform.OS === 'web') {
+      return /iPad|iPhone|iPod/.test(navigator.userAgent);
+    }
+    return false;
+  }, []);
+
   const repayment = useMemo(() => calculateRepayment(kilometers), [kilometers]);
 
   const trackColor = useMemo(() => {
@@ -245,8 +254,8 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
                         }
                       ]} />
                       
-                      {/* Rickshaw image (fades in when loaded) */}
-                       {Platform.OS !== 'ios' && <Image
+                                              {/* Rickshaw image (fades in when loaded) */}
+                        {!isIOS && <Image
                          source={require('../assets/rickshaw.png')}
                          style={[
                            styles.rickshawImage, 
