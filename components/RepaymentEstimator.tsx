@@ -140,6 +140,38 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
     if (onValueChange) onValueChange(clamped, calculateRepayment(clamped));
   };
 
+  // Simple 5-step increment functions (current client requirement)
+  const handleIncrementSimple = () => {
+    const step = 5;
+    
+    // If current value is not divisible by 5, snap to nearest divisible value first
+    if (kilometers % step !== 0) {
+      const snapped = Math.ceil(kilometers / step) * step; // Round up to next multiple of 5
+      const clamped = Math.min(snapped, MAX_KM);
+      handleDirectKmChange(clamped);
+      return;
+    }
+    
+    const newValue = Math.min(kilometers + step, MAX_KM);
+    handleDirectKmChange(newValue);
+  };
+
+  const handleDecrementSimple = () => {
+    const step = 5;
+    
+    // If current value is not divisible by 5, snap to nearest divisible value first
+    if (kilometers % step !== 0) {
+      const snapped = Math.floor(kilometers / step) * step; // Round down to previous multiple of 5
+      const clamped = Math.max(snapped, 0);
+      handleDirectKmChange(clamped);
+      return;
+    }
+    
+    const newValue = Math.max(kilometers - step, 0);
+    handleDirectKmChange(newValue);
+  };
+
+  // Range-based increment functions (preserved for easy switching back)
   const handleIncrement = () => {
     // Fixed increments based on value ranges
     let increment;
@@ -231,7 +263,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
               opacity: kilometers <= 0 ? 0.3 : 1 
             }
           ]}
-          onPress={handleDecrement}
+          onPress={handleDecrementSimple}
           disabled={kilometers <= 0}
           accessibilityRole="button"
           accessibilityLabel="Decrease distance"
@@ -247,7 +279,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
               opacity: kilometers >= MAX_KM ? 0.3 : 1 
             }
           ]}
-          onPress={handleIncrement}
+          onPress={handleIncrementSimple}
           disabled={kilometers >= MAX_KM}
           accessibilityRole="button"
           accessibilityLabel="Increase distance"
@@ -324,13 +356,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -10,
     bottom: -10,
-    width: 2,
+    width: 3,
     backgroundColor: 'transparent',
-    opacity: 0.7,
+    opacity: 1,
     borderStyle: 'dotted',
-    borderWidth: 2,
-    borderColor: '#9CA3AF',
-    borderLeftWidth: 2,
+    borderWidth: 3,
+    borderColor: '#6B7280',
+    borderLeftWidth: 3,
     borderRightWidth: 0,
     borderTopWidth: 0,
     borderBottomWidth: 0,
