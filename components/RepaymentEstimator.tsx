@@ -6,33 +6,46 @@ import DashedLine from 'react-native-dashed-line';
 import { Ionicons } from '@expo/vector-icons';
 
 
-const Thumb: React.FC<{ color: string; active: boolean }> = React.memo(({ color, active }) => {
-  const loadedOnce = React.useRef(false);
+// const Thumb: React.FC<{ color: string; active: boolean }> = React.memo(({ color, active }) => {
+//   const loadedOnce = React.useRef(false);
+//   return (
+//     <View style={styles.thumbContainer}>
+//       <Image
+//         key={color}
+//         source={require('../assets/rickshaw.png')}
+//         style={[styles.rickshawImage, { tintColor: color }]}
+//         onLoad={() => {
+//           if (loadedOnce.current) return;
+//           loadedOnce.current = true;
+//           // do any one-time work here (or remove entirely)
+//           console.log('rickshaw image loaded once');
+//           alert('loaded!')
+//         }}
+//       />
+//       {/* <View
+//         style={[
+//           styles.fallbackThumb,
+//           {
+//             backgroundColor: color,
+//             borderColor: active ? '#000000' : 'transparent',
+//             borderWidth: active ? 2 : 0,
+//           },
+//         ]}
+//       /> */}
+//     </View>
+//   );
+// });
+
+const Thumb: React.FC<{ color: string; active: boolean }> = React.memo(({ color }) => {
+  // You can keep the loadedOnce ref if you want; not necessary though.
+  // const loadedOnce = React.useRef(false);
   return (
-    <View style={styles.thumbContainer}>
-      <Image
-        key={color}
-        source={require('../assets/rickshaw.png')}
-        style={[styles.rickshawImage, { tintColor: color }]}
-        onLoad={() => {
-          if (loadedOnce.current) return;
-          loadedOnce.current = true;
-          // do any one-time work here (or remove entirely)
-          console.log('rickshaw image loaded once');
-          alert('loaded!')
-        }}
-      />
-      {/* <View
-        style={[
-          styles.fallbackThumb,
-          {
-            backgroundColor: color,
-            borderColor: active ? '#000000' : 'transparent',
-            borderWidth: active ? 2 : 0,
-          },
-        ]}
-      /> */}
-    </View>
+    <Image
+      source={require('../assets/rickshaw.png')}
+      // Fill the 45x35 box from thumbStyle
+      style={{ width: 45, height: 35, resizeMode: 'contain', tintColor: color }}
+      // onLoad={() => { if (!loadedOnce.current) { loadedOnce.current = true; console.log('loaded once'); } }}
+    />
   );
 });
 
@@ -278,18 +291,26 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
           <View style={styles.sliderWrapper}>
             <View style={styles.sliderWithBounds}>
                 <Slider
-                  value={sliderValue}
-                  onValueChange={(v: number | number[]) => handleSliderChange(Array.isArray(v) ? v[0] : v)}
-                  onSlidingStart={() => setIsSliderActive(true)}
-                  onSlidingComplete={() => setIsSliderActive(false)}
-                  minimumValue={0}
-                  maximumValue={1}
-                  step={0.001}
-                  thumbStyle={{ width: 35, height: 25 }}
-                  renderThumbComponent={() => <Thumb color={trackColor} active={isSliderActive} />}
-                  minimumTrackTintColor={trackColor}
-                  maximumTrackTintColor="#374151"
-                  thumbTintColor={trackColor}
+                value={sliderValue}
+                onValueChange={(v: number | number[]) => handleSliderChange(Array.isArray(v) ? v[0] : v)}
+                onSlidingStart={() => setIsSliderActive(true)}
+                onSlidingComplete={() => setIsSliderActive(false)}
+                minimumValue={0}
+                maximumValue={1}
+                step={0.001}
+              
+                // 2) Make the thumb box match the image and be transparent
+                thumbStyle={{ width: 45, height: 35, backgroundColor: 'transparent' }}
+              
+                // 1) Use trackStyle instead of scaleY
+                trackStyle={{ height: 5, borderRadius: 5 }}
+              
+                // 3) Remove thumbTintColor to avoid default thumb underlay
+                // thumbTintColor={trackColor}  <-- delete this
+              
+                renderThumbComponent={() => <Thumb color={trackColor} active={isSliderActive} />}
+                minimumTrackTintColor={trackColor}
+                maximumTrackTintColor="#374151"
                 />
               {/* Boundary markers */}
               {/* <View style={[styles.boundaryLine, { marginLeft: 30, left: `${lowerBoundPosition}%` }]} /> */}
@@ -394,7 +415,6 @@ const styles = StyleSheet.create({
   },
   sliderWrapper: {
     width: '100%',
-    transform: [{ scaleY: Platform.OS === 'android' ? 1.4 : Platform.OS === 'ios' ? 1.4 : 1.25 }],
   },
   sliderWithBounds: {
     position: 'relative',
@@ -427,28 +447,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
-  },
-  fallbackThumb: {
-    position: 'absolute',
-    backgroundColor: 'transparent',
-    width: 35,
-    height: 34,
-    borderRadius: 100,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  iosHandle: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
   },
   rickshawImage: {
     width: 45,
