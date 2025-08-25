@@ -41,6 +41,7 @@ const Thumb: React.FC<{ color: string; active: boolean }> = React.memo(({ color 
   // const loadedOnce = React.useRef(false);
   return (
     <Image
+      key={color}
       source={require('../assets/rickshaw.png')}
       // Fill the 45x35 box from thumbStyle
       style={{ width: 45, height: 35, resizeMode: 'contain', tintColor: color }}
@@ -303,7 +304,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
                 thumbStyle={{ width: 45, height: 35, backgroundColor: 'transparent' }}
               
                 // 1) Use trackStyle instead of scaleY
-                trackStyle={{ height: 5, borderRadius: 5 }}
+                trackStyle={{ height: 5, borderRadius: 5, marginLeft: 5 }}
               
                 // 3) Remove thumbTintColor to avoid default thumb underlay
                 // thumbTintColor={trackColor}  <-- delete this
