@@ -257,7 +257,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
                   renderThumbComponent={() => (
                     <View style={styles.thumbContainer}>
                       {/* Slider handle using CSS background approach */}
-                      <Image
+                      {/* <Image
                           source={require('../assets/rickshaw.png')}
                           style={[
                             styles.rickshawImage,
@@ -265,7 +265,17 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
                               tintColor: trackColor,
                             }
                           ]}
-                        />
+                        /> */}
+
+
+                    <View style={[
+                        styles.fallbackThumb, 
+                        { 
+                          backgroundColor: trackColor, 
+                          borderColor: ( isSliderActive) ? '#000000' : 'transparent',
+                          borderWidth: ( isSliderActive) ? 2 : 0
+                        }
+                      ]} />
                     </View>
                 )}
                   minimumTrackTintColor={trackColor}
