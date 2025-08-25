@@ -11,6 +11,7 @@ const Thumb: React.FC<{ color: string; active: boolean }> = React.memo(({ color,
   return (
     <View style={styles.thumbContainer}>
       <Image
+        key={color}
         source={require('../assets/rickshaw.png')}
         style={[styles.rickshawImage, { tintColor: color }]}
         onLoad={() => {
