@@ -3,38 +3,6 @@ import { View, Text, StyleSheet, Platform, Image, TouchableOpacity } from 'react
 import { Slider } from '@miblanchard/react-native-slider';
 import { getTranslations, Language } from '../i18n';
 import DashedLine from 'react-native-dashed-line';
-import { Ionicons } from '@expo/vector-icons';
-
-
-// const Thumb: React.FC<{ color: string; active: boolean }> = React.memo(({ color, active }) => {
-//   const loadedOnce = React.useRef(false);
-//   return (
-//     <View style={styles.thumbContainer}>
-//       <Image
-//         key={color}
-//         source={require('../assets/rickshaw.png')}
-//         style={[styles.rickshawImage, { tintColor: color }]}
-//         onLoad={() => {
-//           if (loadedOnce.current) return;
-//           loadedOnce.current = true;
-//           // do any one-time work here (or remove entirely)
-//           console.log('rickshaw image loaded once');
-//           alert('loaded!')
-//         }}
-//       />
-//       {/* <View
-//         style={[
-//           styles.fallbackThumb,
-//           {
-//             backgroundColor: color,
-//             borderColor: active ? '#000000' : 'transparent',
-//             borderWidth: active ? 2 : 0,
-//           },
-//         ]}
-//       /> */}
-//     </View>
-//   );
-// });
 
 const Thumb: React.FC<{ color: string; active: boolean }> = React.memo(({ color }) => {
   // You can keep the loadedOnce ref if you want; not necessary though.
@@ -44,7 +12,7 @@ const Thumb: React.FC<{ color: string; active: boolean }> = React.memo(({ color 
       key={color}
       source={require('../assets/rickshaw.png')}
       // Fill the 45x35 box from thumbStyle
-      style={{ width: 45, height: 35, resizeMode: 'contain', tintColor: color }}
+      style={{ width: 45, height: 35, resizeMode: 'contain', tintColor: color, transform: 'scaleY(1.4) scaleX(1.25)' }}
       // onLoad={() => { if (!loadedOnce.current) { loadedOnce.current = true; console.log('loaded once'); } }}
     />
   );
@@ -61,20 +29,6 @@ function clamp(value: number, minValue: number, maxValue: number): number {
   return Math.min(Math.max(value, minValue), maxValue);
 }
 
-function getColorFilterForColor(color: string): string {
-  // Convert hex colors to CSS filters that produce exact color matches
-  switch (color) {
-    case '#FACC15': // yellow - exact match
-      return 'brightness(0) saturate(100%) invert(91%) sepia(89%) saturate(1758%) hue-rotate(358deg) brightness(100%) contrast(97%)';
-    case '#3B82F6': // blue - exact match  
-      return 'brightness(0) saturate(100%) invert(46%) sepia(89%) saturate(2613%) hue-rotate(220deg) brightness(100%) contrast(95%)';
-    case '#10B981': // green - exact match
-      return 'brightness(0) saturate(100%) invert(64%) sepia(55%) saturate(2402%) hue-rotate(127deg) brightness(94%) contrast(89%)';
-    default:
-      return 'none';
-  }
-}
-
 function calculateRepayment(kilometers: number): number {
   const base = 8000 + 10 * kilometers;
   const withMinimum = Math.max(base, 10000);
@@ -86,38 +40,9 @@ function formatPKR(amount: number, language: Language): string {
   return formatNumberByLanguage(amount, language);
 }
 
-function toUrduDigits(input: string): string {
-  const mapping: Record<string, string> = {
-    '0': '۰',
-    '1': '۱',
-    '2': '۲',
-    '3': '۳',
-    '4': '٤',
-    '5': '۵',
-    '6': '٦',
-    '7': '۷',
-    '8': '۸',
-    '9': '۹',
-  };
-  return input.replace(/[0-9]/g, (d) => mapping[d] ?? d);
-}
-
 function formatNumberByLanguage(value: number, language: Language): string {
   return value.toString();
-  
-  // if(language !== 'ur') return value.toString();
-
-  // Use ASCII digits first so our explicit mapping is always applied
-  const base = value.toLocaleString('en-PK');
-  if (language !== 'ur') return base;
-  const urduDigits = toUrduDigits(base);
-  // Use Arabic thousands separator to avoid bidi confusion with Latin comma
-  const withArabicSeparator = urduDigits.replace(/,/g, '٬'); // U+066C
-  // Wrap in RTL isolate to render correctly within mixed-direction text
-  return `\u2067${withArabicSeparator}\u2069`;
 }
-
-
 
 // Hybrid mapping functions for finer control up to 1000km
 function sliderToKm(sliderValue: number, maxKm: number): number {
@@ -234,53 +159,6 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
     handleDirectKmChange(newValue);
   };
 
-  // Range-based increment functions (preserved for easy switching back)
-  const handleIncrement = () => {
-    // Fixed increments based on value ranges
-    let increment;
-    if (kilometers < 250) {
-      increment = 5;
-    } else if (kilometers < 1000) {
-      increment = 50;
-    } else {
-      increment = 100;
-    }
-    
-    // If current value is not divisible by increment, snap to nearest divisible value first
-    if (kilometers % increment !== 0) {
-      const snapped = Math.ceil(kilometers / increment) * increment; // Round up to next multiple
-      const clamped = Math.min(snapped, MAX_KM);
-      handleDirectKmChange(clamped);
-      return;
-    }
-    
-    const newValue = Math.min(kilometers + increment, MAX_KM);
-    handleDirectKmChange(newValue);
-  };
-
-  const handleDecrement = () => {
-    // Fixed decrements based on value ranges
-    let decrement;
-    if (kilometers <= 250) {
-      decrement = 5;
-    } else if (kilometers <= 1000) {
-      decrement = 50;
-    } else {
-      decrement = 100;
-    }
-    
-    // If current value is not divisible by decrement, snap to nearest divisible value first
-    if (kilometers % decrement !== 0) {
-      const snapped = Math.floor(kilometers / decrement) * decrement; // Round down to previous multiple
-      const clamped = Math.max(snapped, 0);
-      handleDirectKmChange(clamped);
-      return;
-    }
-    
-    const newValue = Math.max(kilometers - decrement, 0);
-    handleDirectKmChange(newValue);
-  };
-
   return (
     <View style={styles.container}>
       <Text style={[styles.kmText, lang === 'ur' && styles.rtlText, { color: trackColor }]}>
@@ -298,27 +176,18 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
                 onSlidingComplete={() => setIsSliderActive(false)}
                 minimumValue={0}
                 maximumValue={1}
-                step={0.001}
-              
-                // 2) Make the thumb box match the image and be transparent
-                thumbStyle={{ width: 45, height: 35, backgroundColor: 'transparent' }}
-              
-                // 1) Use trackStyle instead of scaleY
+                step={0.001}                            
                 trackStyle={{ height: 5, borderRadius: 5, marginLeft: 5 }}
-              
-                // 3) Remove thumbTintColor to avoid default thumb underlay
-                // thumbTintColor={trackColor}  <-- delete this
-              
                 renderThumbComponent={() => <Thumb color={trackColor} active={isSliderActive} />}
                 minimumTrackTintColor={trackColor}
                 maximumTrackTintColor="#374151"
                 />
               {/* Boundary markers */}
               {/* <View style={[styles.boundaryLine, { marginLeft: 30, left: `${lowerBoundPosition}%` }]} /> */}
-              <DashedLine dashColor='gray' style={[styles.boundaryLine, { marginLeft: 25.5, left: `${lowerBoundPosition}%` }]} axis='vertical' dashLength={5} />
+              <DashedLine dashColor='gray' style={[styles.boundaryLine, { marginLeft: 31, left: `${lowerBoundPosition}%` }]} axis='vertical' dashLength={5} />
 
               {/* <View style={[styles.boundaryLine, { left: `${upperBoundPosition}%` }]} /> */}
-              <DashedLine dashColor='gray' style={[styles.boundaryLine, { marginLeft: -1, left: `${upperBoundPosition}%` }]}  axis='vertical' dashLength={5} />
+              <DashedLine dashColor='gray' style={[styles.boundaryLine, { marginLeft: -3, left: `${upperBoundPosition}%` }]}  axis='vertical' dashLength={5} />
             </View>
           </View>
         </View>
