@@ -18,6 +18,7 @@ const Thumb: React.FC<{ color: string; active: boolean }> = React.memo(({ color,
           loadedOnce.current = true;
           // do any one-time work here (or remove entirely)
           console.log('rickshaw image loaded once');
+          alert('loaded!')
         }}
       />
       {/* <View
