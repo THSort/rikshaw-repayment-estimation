@@ -5,6 +5,36 @@ import { getTranslations, Language } from '../i18n';
 import DashedLine from 'react-native-dashed-line';
 import { Ionicons } from '@expo/vector-icons';
 
+
+const Thumb: React.FC<{ color: string; active: boolean }> = React.memo(({ color, active }) => {
+  const loadedOnce = React.useRef(false);
+  return (
+    <View style={styles.thumbContainer}>
+      <Image
+        source={require('../assets/rickshaw.png')}
+        style={[styles.rickshawImage, { tintColor: color }]}
+        onLoad={() => {
+          if (loadedOnce.current) return;
+          loadedOnce.current = true;
+          // do any one-time work here (or remove entirely)
+          console.log('rickshaw image loaded once');
+        }}
+      />
+      {/* <View
+        style={[
+          styles.fallbackThumb,
+          {
+            backgroundColor: color,
+            borderColor: active ? '#000000' : 'transparent',
+            borderWidth: active ? 2 : 0,
+          },
+        ]}
+      /> */}
+    </View>
+  );
+});
+
+
 export type RepaymentEstimatorProps = {
   initialKilometers?: number;
   onValueChange?: (kilometers: number, repayment: number) => void;
@@ -254,30 +284,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
                   maximumValue={1}
                   step={0.001}
                   thumbStyle={{ width: 35, height: 25 }}
-                  renderThumbComponent={() => (
-                    <View style={styles.thumbContainer}>
-                      {/* Slider handle using CSS background approach */}
-                      {/* <Image
-                          source={require('../assets/rickshaw.png')}
-                          style={[
-                            styles.rickshawImage,
-                            { 
-                              tintColor: trackColor,
-                            }
-                          ]}
-                        /> */}
-
-
-                    <View style={[
-                        styles.fallbackThumb, 
-                        { 
-                          backgroundColor: trackColor, 
-                          borderColor: ( isSliderActive) ? '#000000' : 'transparent',
-                          borderWidth: ( isSliderActive) ? 2 : 0
-                        }
-                      ]} />
-                    </View>
-                )}
+                  renderThumbComponent={() => <Thumb color={trackColor} active={isSliderActive} />}
                   minimumTrackTintColor={trackColor}
                   maximumTrackTintColor="#374151"
                   thumbTintColor={trackColor}
