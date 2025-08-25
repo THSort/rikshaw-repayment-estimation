@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Platform, Image, TouchableOpacity } from 'react
 import { Slider } from '@miblanchard/react-native-slider';
 import { getTranslations, Language } from '../i18n';
 import DashedLine from 'react-native-dashed-line';
+import { Ionicons } from '@expo/vector-icons';
 
 export type RepaymentEstimatorProps = {
   initialKilometers?: number;
@@ -12,6 +13,20 @@ export type RepaymentEstimatorProps = {
 
 function clamp(value: number, minValue: number, maxValue: number): number {
   return Math.min(Math.max(value, minValue), maxValue);
+}
+
+function getColorFilterForColor(color: string): string {
+  // Convert hex colors to CSS filters that produce exact color matches
+  switch (color) {
+    case '#FACC15': // yellow - exact match
+      return 'brightness(0) saturate(100%) invert(91%) sepia(89%) saturate(1758%) hue-rotate(358deg) brightness(100%) contrast(97%)';
+    case '#3B82F6': // blue - exact match  
+      return 'brightness(0) saturate(100%) invert(46%) sepia(89%) saturate(2613%) hue-rotate(220deg) brightness(100%) contrast(95%)';
+    case '#10B981': // green - exact match
+      return 'brightness(0) saturate(100%) invert(64%) sepia(55%) saturate(2402%) hue-rotate(127deg) brightness(94%) contrast(89%)';
+    default:
+      return 'none';
+  }
 }
 
 function calculateRepayment(kilometers: number): number {
@@ -100,8 +115,6 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
   const MAX_KM = 4000; // Increased from 3800
   const [kilometers, setKilometers] = useState<number>(clamp(initialKilometers, 0, MAX_KM));
   const [sliderValue, setSliderValue] = useState<number>(kmToSlider(clamp(initialKilometers, 0, MAX_KM), MAX_KM));
-  const [imageLoaded, setImageLoaded] = useState<boolean>(false);
-  const [imageLoadedOnce, setImageLoadedOnce] = useState<boolean>(false);
   const [isSliderActive, setIsSliderActive] = useState<boolean>(false);
   const t = useMemo(() => getTranslations(lang), [lang]);
 
@@ -117,7 +130,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
   const repayment = useMemo(() => calculateRepayment(kilometers), [kilometers]);
 
   const trackColor = useMemo(() => {
-    if (kilometers < 200) return '#8B5CF6'; // purple-500
+    if (kilometers < 200) return '#FACC15'; // yellow-400
     if (kilometers < 3200) return '#3B82F6'; // blue-500
     return '#10B981'; // emerald-500
   }, [kilometers, sliderValue]);
@@ -243,38 +256,16 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
                   thumbStyle={{ width: 35, height: 25 }}
                   renderThumbComponent={() => (
                     <View style={styles.thumbContainer}>
-                      {/* Fallback thumb (always visible) */}
-                      <View style={[
-                        styles.fallbackThumb, 
-                        { 
-                          backgroundColor: trackColor, 
-                          opacity: imageLoaded ? 0 : 1,
-                          borderColor: (!imageLoaded && isSliderActive) ? '#000000' : 'transparent',
-                          borderWidth: (!imageLoaded && isSliderActive) ? 2 : 0
-                        }
-                      ]} />
-                      
-                                              {/* Rickshaw image (fades in when loaded) */}
-                        {!isIOS && <Image
-                         source={require('../assets/rickshaw.png')}
-                         style={[
-                           styles.rickshawImage, 
-                           { 
-                             tintColor: trackColor,
-                             opacity: imageLoadedOnce ? 1 : 0
-                           }
-                         ]}
-                         onLoad={() => {
-                           if (!imageLoadedOnce) {
-                             setImageLoaded(true);
-                             setImageLoadedOnce(true);
-                           }
-                         }}
-                         onError={() => {
-                           setImageLoaded(false);
-                           setImageLoadedOnce(false);
-                         }}
-                       />}
+                      {/* Slider handle using CSS background approach */}
+                      <Image
+                          source={require('../assets/rickshaw.png')}
+                          style={[
+                            styles.rickshawImage,
+                            { 
+                              tintColor: trackColor,
+                            }
+                          ]}
+                        />
                     </View>
                 )}
                   minimumTrackTintColor={trackColor}
@@ -283,10 +274,10 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
                 />
               {/* Boundary markers */}
               {/* <View style={[styles.boundaryLine, { marginLeft: 30, left: `${lowerBoundPosition}%` }]} /> */}
-              <DashedLine dashColor='gray' style={[styles.boundaryLine, { marginLeft: 30, left: `${lowerBoundPosition}%` }]} axis='vertical' dashLength={5} />
+              <DashedLine dashColor='gray' style={[styles.boundaryLine, { marginLeft: 25.5, left: `${lowerBoundPosition}%` }]} axis='vertical' dashLength={5} />
 
               {/* <View style={[styles.boundaryLine, { left: `${upperBoundPosition}%` }]} /> */}
-              <DashedLine dashColor='gray' style={[styles.boundaryLine, { left: `${upperBoundPosition}%` }]}  axis='vertical' dashLength={5} />
+              <DashedLine dashColor='gray' style={[styles.boundaryLine, { marginLeft: -1, left: `${upperBoundPosition}%` }]}  axis='vertical' dashLength={5} />
             </View>
           </View>
         </View>
@@ -430,11 +421,25 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  iosHandle: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
   rickshawImage: {
-    objectFit:'contain',
-    position: 'absolute',
-    width: 45, //35
-    height: 35, //25
+    width: 45,
+    height: 35,
+    resizeMode: 'contain',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
   },
   thumbOuter: {
     width: 48,
