@@ -8,10 +8,12 @@ export type AppTranslations = {
   monthlyKilometersA11y: string;
   currencySuffix: string;
   toggleLanguageA11y: string;
+  perMonthSuffix: string;
 };
 
 const translations: Record<Language, AppTranslations> = {
   en: {
+    perMonthSuffix: 'per month',
     title: 'Rickshaw App - Repayment Estimator',
     kmSuffix: 'km',
     estimatedRepayment: 'Estimated Repayment',
@@ -21,6 +23,7 @@ const translations: Record<Language, AppTranslations> = {
     toggleLanguageA11y: 'Toggle language',
   },
   ur: {
+    perMonthSuffix: 'ماہانہ',
     title: 'رکشہ ایپ - ادائیگی تخمینہ',
     kmSuffix: 'کلومیٹر',
     estimatedRepayment: 'متوقع ادائیگی',

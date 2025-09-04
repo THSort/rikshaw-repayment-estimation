@@ -161,9 +161,14 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.kmText, lang === 'ur' && styles.rtlText, { color: trackColor }]}>
-        {formatNumberByLanguage(kilometers, lang)} {t.kmSuffix}
-      </Text>
+      <View style={styles.valueAndSuffixContainer}>
+        <Text style={[styles.kmText, lang === 'ur' && styles.rtlText, { color: trackColor }]}>
+          {formatNumberByLanguage(kilometers, lang)} {t.kmSuffix}
+        </Text>
+        <Text style={[styles.perMonthText, lang === 'ur' && styles.rtlText, lang === 'ur' && {fontSize: 26}]}>
+          {t.perMonthSuffix}
+        </Text>
+      </View>
 
       <View style={styles.sliderContainer}>
         <View style={styles.sliderRow}>
@@ -229,9 +234,14 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
 
       <View style={styles.resultBlock}>
         <Text style={styles.subtitle}>{t.estimatedRepayment}</Text>
-        <Text style={[styles.repaymentText, lang === 'ur' && styles.rtlText, { color: trackColor }]}>
-          {formatPKR(repayment, lang)} {t.currencySuffix}
-        </Text>
+        <View style={styles.valueAndSuffixContainer}>
+          <Text style={[styles.repaymentText, lang === 'ur' && styles.rtlText, { color: trackColor }]}>
+            {formatPKR(repayment, lang)} {t.currencySuffix}
+          </Text>
+          <Text style={[styles.perMonthText, lang === 'ur' && styles.rtlText, lang === 'ur' && {fontSize: 26}]}>
+            {t.perMonthSuffix}
+          </Text>
+        </View>
       </View>
     </View>
   );
@@ -248,7 +258,6 @@ const styles = StyleSheet.create({
     fontSize: 40,
     fontWeight: Platform.OS === 'web' ? '700' : '800',
     textAlign: 'center',
-    marginBottom: 16,
     color: '#1F2937',
   },
   buttonRow: {
@@ -356,6 +365,16 @@ const styles = StyleSheet.create({
     fontWeight: Platform.OS === 'web' ? '800' : '900',
     color: '#1F2937',
     textAlign: 'center',
+  },
+  perMonthText: {
+    fontSize: 22, // Smaller font size
+    color: '#6B7280', // Gray color
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  valueAndSuffixContainer: {
+    alignItems: 'center', // Center the text horizontally
+    marginBottom: 16, // Add some space below this block
   },
 });
 
