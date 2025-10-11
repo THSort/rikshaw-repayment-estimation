@@ -100,9 +100,8 @@ function AppInner() {
           onPress={handleModalOpen}
           accessibilityRole="button"
           accessibilityLabel="Show information"
-          style={styles.fabInfo}
         >
-          <Icon name="info" size={28} color="#FFFFFF" />
+          <Icon name="info" size={30} color="#6B7280" />
         </TouchableOpacity>
       </View>
 
@@ -195,17 +194,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-  },
-  fabInfo: {
-    borderRadius: 24,
-    backgroundColor: '#6B7280',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
   },
   fabToggle: {
     paddingHorizontal: 20,
