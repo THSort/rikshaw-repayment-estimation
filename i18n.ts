@@ -9,6 +9,7 @@ export type AppTranslations = {
   currencySuffix: string;
   toggleLanguageA11y: string;
   perMonthSuffix: string;
+  infoSlideText: string; // <-- 1. Add this line
 };
 
 const translations: Record<Language, AppTranslations> = {
@@ -21,6 +22,7 @@ const translations: Record<Language, AppTranslations> = {
     monthlyKilometersA11y: 'Monthly kilometers',
     currencySuffix: 'Rs',
     toggleLanguageA11y: 'Toggle language',
+    infoSlideText: 'If you pay Rs. XX per month, your contract will end in YY months.',
   },
   ur: {
     perMonthSuffix: 'ماہانہ',
@@ -31,6 +33,7 @@ const translations: Record<Language, AppTranslations> = {
     monthlyKilometersA11y: 'ماہانہ کلومیٹر',
     currencySuffix: 'روپے',
     toggleLanguageA11y: 'زبان تبدیل کریں',
+    infoSlideText: 'اگر آپ ماہانہ XX روپے ادا کرتے ہیں، تو آپ کا معاہدہ YY ماہ میں ختم ہو جائے گا۔',
   },
 };
 

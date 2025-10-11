@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Platform, Image, TouchableOpacity } from 'react-native';
 import { Slider } from '@miblanchard/react-native-slider';
 import { getTranslations, Language } from '../i18n';
@@ -89,6 +89,9 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
   const [isSliderActive, setIsSliderActive] = useState<boolean>(false);
   const t = useMemo(() => getTranslations(lang), [lang]);
 
+
+
+
   // Check if running on iOS (including iOS Safari on web)
   const isIOS = useMemo(() => {
     if (Platform.OS === 'ios') return true;
@@ -161,6 +164,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
 
   return (
     <View style={styles.container}>
+
       <View style={styles.valueAndSuffixContainer}>
         <Text style={[styles.kmText, lang === 'ur' && styles.rtlText, { color: trackColor }]}>
           {formatNumberByLanguage(kilometers, lang)} {t.kmSuffix}
@@ -243,6 +247,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
           </Text>
         </View>
       </View>
+
     </View>
   );
 };
