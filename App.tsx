@@ -1,26 +1,28 @@
-import React, { useMemo, useState, useRef, useCallback } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView, StyleSheet, Text, View, TouchableOpacity, Platform, Modal } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, TouchableOpacity, Platform, Modal, ScrollView, Dimensions, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import RepaymentEstimator from './components/RepaymentEstimator';
-import { getTranslations, Language } from './i18n';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Feather';
-import { Slider } from '@miblanchard/react-native-slider';
+import { Language, getTranslations } from './i18n';
+
+// Get the width of the screen to set the slide width
+const { width } = Dimensions.get('window');
+const MODAL_WIDTH = 360; // As defined in your styles
 
 function AppInner() {
   const [language, setLanguage] = useState<Language>('ur');
   const [isInfoModalVisible, setInfoModalVisible] = useState(false);
-  const [selectedPaymentIndex, setSelectedPaymentIndex] = useState(2); // Start at middle option (Rs. 20,000)
-  const [isSliderActive, setIsSliderActive] = useState(false);
-  const [mainSliderRepayment, setMainSliderRepayment] = useState(20000); // Track main slider repayment
+  const [mainSliderRepayment, setMainSliderRepayment] = useState(20000);
+  const [activeSlide, setActiveSlide] = useState(0); // New state for dot indicator
   const t = useMemo(() => getTranslations(language), [language]);
   const insets = useSafeAreaInsets();
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const toggleLanguage = () => {
     setLanguage((prev: Language) => (prev === 'ur' ? 'en' : 'ur'));
   };
 
-  // Data for the payment scenarios
   const scenarios = useMemo(() => [
     { payment: 10000, duration: 48 },
     { payment: 17500, duration: 28 },
@@ -29,50 +31,38 @@ function AppInner() {
     { payment: 40000, duration: 12 },
   ], []);
 
-  const currentScenario = scenarios[selectedPaymentIndex];
-  const minPayment = scenarios[0].payment;
-  const maxPayment = scenarios[scenarios.length - 1].payment;
-
-  const handleSliderChange = (value: number | number[]) => {
-    const sliderValue = Array.isArray(value) ? value[0] : value;
-    const newIndex = Math.round(sliderValue);
-    setSelectedPaymentIndex(newIndex);
+  // Format numbers to include commas
+  const formatPKR = (amount: number): string => {
+    return amount.toLocaleString('en-US');
   };
 
-  const handleSliderStart = () => {
-    setIsSliderActive(true);
-  };
-
-  const handleSliderComplete = () => {
-    setIsSliderActive(false);
-  };
-
-  const formatPKR = (amount: number, language: Language): string => {
-    return amount.toString();
-  };
-
-  // Function to find the closest scenario index based on repayment amount
-  const findClosestScenarioIndex = (repaymentAmount: number): number => {
-    let closestIndex = 0;
-    let minDifference = Math.abs(scenarios[0].payment - repaymentAmount);
-    
-    for (let i = 1; i < scenarios.length; i++) {
-      const difference = Math.abs(scenarios[i].payment - repaymentAmount);
-      if (difference < minDifference) {
-        minDifference = difference;
-        closestIndex = i;
-      }
-    }
-    
-    return closestIndex;
-  };
-
-  // Update modal slider position when modal opens
+  // Handle modal opening: reset scroll to the first slide
   const handleModalOpen = () => {
-    const closestIndex = findClosestScenarioIndex(mainSliderRepayment);
-    setSelectedPaymentIndex(closestIndex);
+    setActiveSlide(0);
+    scrollViewRef.current?.scrollTo({ x: 0, animated: false });
     setInfoModalVisible(true);
   };
+
+  // *** THIS IS THE CORRECTED FUNCTION ***
+  // Update active slide index when user swipes
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    // Use the dynamic width from the event for a more robust calculation
+    const slideWidth = event.nativeEvent.layoutMeasurement.width;
+    if (slideWidth) {
+      console.log('event.nativeEvent.contentOffset.x', event.nativeEvent.contentOffset.x)
+      const slideIndex = Math.round(event.nativeEvent.contentOffset.x / slideWidth);
+      if (slideIndex !== activeSlide) {
+        setActiveSlide(slideIndex);
+      }
+    }
+  };
+
+  const allSlides = [
+    // Intro slide data placeholder
+    { type: 'intro' },
+    // Scenario slides
+    ...scenarios.map(s => ({ ...s, type: 'scenario' }))
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -96,17 +86,18 @@ function AppInner() {
           <Text style={styles.fabText}>{language === 'ur' ? 'EN' : 'اردو'}</Text>
         </TouchableOpacity>
 
+        {/* Updated "i" icon with new style */}
         <TouchableOpacity
           onPress={handleModalOpen}
           accessibilityRole="button"
           accessibilityLabel="Show information"
+          style={styles.fabInfo}
         >
-          <Icon name="info" size={30} color="#6B7280" />
+          <Icon name="info" size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
 
       <Modal
-        // animationType="fade"
         transparent={true}
         visible={isInfoModalVisible}
         onRequestClose={() => setInfoModalVisible(false)}
@@ -117,47 +108,56 @@ function AppInner() {
               <Icon name="x" size={28} color="#9CA3AF" />
             </TouchableOpacity>
 
-            <Text style={[styles.modalTitle, language === 'ur' && styles.urduModalTitle]}>
-              {language === 'ur' ? (
-                <>
-                  اگر آپ <Text style={styles.boldText}>{formatPKR(currentScenario.payment, language)} روپے</Text> ماہانہ ادا کریں، تو آپ کا معاہدہ <Text style={styles.boldText}>{currentScenario.duration} مہینوں</Text> میں ختم ہو جائے گا۔
-                </>
-              ) : (
-                <>
-                  If you pay <Text style={styles.boldText}>Rs. {formatPKR(currentScenario.payment, language)}</Text> per month, your contract will end in <Text style={styles.boldText}>{currentScenario.duration} months</Text>.
-                </>
-              )}
-            </Text>
+            <ScrollView
+              ref={scrollViewRef}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false} 
+              onScrollBeginDrag={handleScroll}
+              onScrollEndDrag={handleScroll}
+              onMomentumScrollBegin={handleScroll}
+              onScroll={handleScroll}
+              onMomentumScrollEnd={handleScroll} // Use onMomentumScrollEnd for better performance
+              style={{ width: MODAL_WIDTH }}
+              contentContainerStyle={{ alignItems: 'center' }}
+            >
+              {/* Slide 1: Introduction */}
+              <View style={styles.slide}>
+                <Text style={[styles.modalTitle, language === 'ur' && styles.urduModalTitle]}>
+                  {language === 'ur' 
+                    ? "آئیے قبل از وقت ادائیگی کی رقم اور نظام الاوقات کی چند مثالیں دیکھتے ہیں۔"
+                    : "Let’s look at a few examples of prepayment amounts and schedules."}
+                </Text>
+              </View>
 
-            <View style={styles.sliderContainer}>
-              <Slider
-                value={selectedPaymentIndex}
-                onValueChange={handleSliderChange}
-                onSlidingStart={handleSliderStart}
-                onSlidingComplete={handleSliderComplete}
-                minimumValue={0}
-                maximumValue={scenarios.length - 1}
-                step={1}
-                trackStyle={{ height: 6, borderRadius: 3 }}
-                minimumTrackTintColor="#3B82F6"
-                maximumTrackTintColor="#E5E7EB"
-                thumbStyle={{ 
-                  width: isSliderActive ? 24 : 20, 
-                  height: isSliderActive ? 24 : 20,
-                  backgroundColor: isSliderActive ? '#1D4ED8' : '#3B82F6',
-                  shadowColor: isSliderActive ? '#1D4ED8' : '#3B82F6',
-                  shadowOffset: { width: 0, height: isSliderActive ? 4 : 2 },
-                  shadowOpacity: isSliderActive ? 0.4 : 0.3,
-                  shadowRadius: isSliderActive ? 6 : 4,
-                  elevation: isSliderActive ? 8 : 5,
-                }}
-              />
-              
-              {/* <View style={styles.sliderLabels}>
-                <Text style={styles.sliderLabel}>Rs. {formatPKR(minPayment, language)}</Text>
-                <Text style={styles.sliderLabel}>Rs. {formatPKR(maxPayment, language)}</Text>
-              </View> */}
+              {/* Slides 2-6: Scenarios */}
+              {scenarios.map((scenario, index) => (
+                <View style={styles.slide} key={index}>
+                  <Text style={[styles.modalTitle, language === 'ur' && styles.urduModalTitle]}>
+                    {language === 'ur' ? (
+                      <>
+                        اگر آپ ہر مہینے <Text style={styles.boldText}>{formatPKR(scenario.payment)} روپے</Text> ادا کرتے ہیں، تو آپ کا قرض کا معاہدہ <Text style={styles.boldText}>{scenario.duration} مہینوں</Text> میں ختم ہو جائے گا۔
+                      </>
+                    ) : (
+                      <>
+                        If you pay <Text style={styles.boldText}>Rs. {formatPKR(scenario.payment)}</Text> every month, your loan contract will finish in <Text style={styles.boldText}>{scenario.duration} months</Text>.
+                      </>
+                    )}
+                  </Text>
+                </View>
+              ))}
+            </ScrollView>
+
+            {/* Dot Indicator */}
+            <View style={styles.dotContainer}>
+              {allSlides.map((_, index) => (
+                <View
+                  key={index}
+                  style={[styles.dot, activeSlide === index ? styles.dotActive : {}]}
+                />
+              ))}
             </View>
+
           </View>
         </View>
       </Modal>
@@ -206,6 +206,20 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  // New style for the info button to match the language toggle
+  fabInfo: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#374151',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
   fabText: {
     color: '#FFFFFF',
     fontSize: 16,
@@ -219,11 +233,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    width: 360,
+    width: MODAL_WIDTH,
     backgroundColor: 'white',
     borderRadius: 16,
-    paddingVertical: 32,
-    paddingHorizontal: 24,
+    paddingVertical: 24,
+    paddingHorizontal: 0, // No horizontal padding on the container
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -236,36 +250,43 @@ const styles = StyleSheet.create({
     top: 16,
     right: 16,
     zIndex: 1,
-    marginBottom: 10,
+  },
+  // Style for each individual slide
+  slide: {
+    width: MODAL_WIDTH,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    height: 150, // Give slides a consistent height
   },
   modalTitle: {
     fontSize: 20,
     textAlign: 'center',
     color: '#374151',
-    marginTop: 30,
-    marginBottom: 28,
     lineHeight: 28,
-    paddingHorizontal: 10,
   },
   urduModalTitle: {
     fontSize: 22,
-    lineHeight: 30,
+    lineHeight: 32,
+    fontFamily: Platform.OS === 'android' ? 'NotoNastaliqUrdu-Regular' : 'System', // Example font
   },
   boldText: {
     fontWeight: 'bold',
   },
-  sliderContainer: {
-    width: '100%',
-    paddingHorizontal: 10,
-  },
-  sliderLabels: {
+  // Dot indicator styles
+  dotContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
+    justifyContent: 'center',
+    marginTop: 16,
   },
-  sliderLabel: {
-    fontSize: 16,
-    color: '#6B7280',
-    fontWeight: '500',
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#D1D5DB', // gray-300
+    marginHorizontal: 4,
+  },
+  dotActive: {
+    backgroundColor: '#3B82F6', // blue-500
   },
 });
