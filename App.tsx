@@ -43,19 +43,14 @@ function AppInner() {
     setInfoModalVisible(true);
   };
 
-  // *** THIS IS THE CORRECTED FUNCTION ***
-  // Update active slide index when user swipes
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    // Use the dynamic width from the event for a more robust calculation
+    console.log('handleScroll');
     const slideWidth = event.nativeEvent.layoutMeasurement.width;
-    if (slideWidth) {
-      console.log('event.nativeEvent.contentOffset.x', event.nativeEvent.contentOffset.x)
-      const slideIndex = Math.round(event.nativeEvent.contentOffset.x / slideWidth);
-      if (slideIndex !== activeSlide) {
-        setActiveSlide(slideIndex);
-      }
-    }
+    const offsetX = event.nativeEvent.contentOffset.x;
+    const slideIndex = Math.round(offsetX / slideWidth);
+    setActiveSlide(slideIndex);
   };
+  
 
   const allSlides = [
     // Intro slide data placeholder
@@ -112,12 +107,19 @@ function AppInner() {
               ref={scrollViewRef}
               horizontal
               pagingEnabled
-              showsHorizontalScrollIndicator={false} 
-              onScrollBeginDrag={handleScroll}
-              onScrollEndDrag={handleScroll}
-              onMomentumScrollBegin={handleScroll}
-              onScroll={handleScroll}
-              onMomentumScrollEnd={handleScroll} // Use onMomentumScrollEnd for better performance
+              decelerationRate="fast"
+              snapToInterval={MODAL_WIDTH}
+              snapToAlignment="center"
+              showsHorizontalScrollIndicator={false}
+              onScroll={(event) => {
+                const slideWidth = event.nativeEvent.layoutMeasurement.width;
+                const offsetX = event.nativeEvent.contentOffset.x;
+                const slideIndex = Math.round(offsetX / slideWidth);
+                if (slideIndex !== activeSlide) {
+                  setActiveSlide(slideIndex);
+                }
+              }}
+              scrollEventThrottle={16}
               style={{ width: MODAL_WIDTH }}
               contentContainerStyle={{ alignItems: 'center' }}
             >
@@ -130,7 +132,7 @@ function AppInner() {
                 </Text>
               </View>
 
-              {/* Slides 2-6: Scenarios */}
+              {/* Slides 2–6 */}
               {scenarios.map((scenario, index) => (
                 <View style={styles.slide} key={index}>
                   <Text style={[styles.modalTitle, language === 'ur' && styles.urduModalTitle]}>
