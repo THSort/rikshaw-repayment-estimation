@@ -8,7 +8,7 @@ import { Language, getTranslations } from './i18n';
 
 // Get the width of the screen to set the slide width
 const { width } = Dimensions.get('window');
-const MODAL_WIDTH = 360; // As defined in your styles
+const MODAL_WIDTH = 400; // Increased width to prevent content overlap
 
 function AppInner() {
   const [language, setLanguage] = useState<Language>('ur');
@@ -18,6 +18,7 @@ function AppInner() {
   const t = useMemo(() => getTranslations(language), [language]);
   const insets = useSafeAreaInsets();
   const scrollViewRef = useRef<ScrollView>(null);
+  
 
   const toggleLanguage = () => {
     setLanguage((prev: Language) => (prev === 'ur' ? 'en' : 'ur'));
@@ -44,11 +45,12 @@ function AppInner() {
   };
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    console.log('handleScroll');
     const slideWidth = event.nativeEvent.layoutMeasurement.width;
     const offsetX = event.nativeEvent.contentOffset.x;
     const slideIndex = Math.round(offsetX / slideWidth);
-    setActiveSlide(slideIndex);
+    if (slideIndex !== activeSlide) {
+      setActiveSlide(slideIndex);
+    }
   };
   
 
@@ -81,14 +83,14 @@ function AppInner() {
           <Text style={styles.fabText}>{language === 'ur' ? 'EN' : 'اردو'}</Text>
         </TouchableOpacity>
 
-        {/* Updated "i" icon with new style */}
+        {/* Updated Examples button with new style */}
         <TouchableOpacity
           onPress={handleModalOpen}
           accessibilityRole="button"
-          accessibilityLabel="Show information"
-          style={styles.fabInfo}
+          accessibilityLabel="Show examples"
+          style={styles.fabExamples}
         >
-          <Icon name="info" size={24} color="#FFFFFF" />
+          <Text style={styles.fabExamplesText}>{t.seeExamples}</Text>
         </TouchableOpacity>
       </View>
 
@@ -104,50 +106,48 @@ function AppInner() {
             </TouchableOpacity>
 
             <ScrollView
+              disableIntervalMomentum={true}
+              snapToInterval={MODAL_WIDTH}
               ref={scrollViewRef}
               horizontal
               pagingEnabled
               decelerationRate="fast"
-              snapToInterval={MODAL_WIDTH}
               snapToAlignment="center"
               showsHorizontalScrollIndicator={false}
-              onScroll={(event) => {
-                const slideWidth = event.nativeEvent.layoutMeasurement.width;
-                const offsetX = event.nativeEvent.contentOffset.x;
-                const slideIndex = Math.round(offsetX / slideWidth);
-                if (slideIndex !== activeSlide) {
-                  setActiveSlide(slideIndex);
-                }
-              }}
+              onScroll={handleScroll}
               scrollEventThrottle={16}
               style={{ width: MODAL_WIDTH }}
-              contentContainerStyle={{ alignItems: 'center' }}
+              contentContainerStyle={{ alignItems: 'center', flexGrow: 1 }}
             >
               {/* Slide 1: Introduction */}
               <View style={styles.slide}>
                 <Text style={[styles.modalTitle, language === 'ur' && styles.urduModalTitle]}>
                   {language === 'ur' 
-                    ? "آئیے قبل از وقت ادائیگی کی رقم اور نظام الاوقات کی چند مثالیں دیکھتے ہیں۔"
-                    : "Let’s look at a few examples of prepayment amounts and schedules."}
+                    ? "آئیے قرض کی ادائیگی کی رقم اور نظام الاوقات کی چند مثالیں دیکھتے ہیں۔"
+                    : "Let's look at a few examples of loan repayment amounts and schedules."}
                 </Text>
               </View>
 
               {/* Slides 2–6 */}
-              {scenarios.map((scenario, index) => (
-                <View style={styles.slide} key={index}>
-                  <Text style={[styles.modalTitle, language === 'ur' && styles.urduModalTitle]}>
-                    {language === 'ur' ? (
-                      <>
-                        اگر آپ ہر مہینے <Text style={styles.boldText}>{formatPKR(scenario.payment)} روپے</Text> ادا کرتے ہیں، تو آپ کا قرض کا معاہدہ <Text style={styles.boldText}>{scenario.duration} مہینوں</Text> میں ختم ہو جائے گا۔
-                      </>
-                    ) : (
-                      <>
-                        If you pay <Text style={styles.boldText}>Rs. {formatPKR(scenario.payment)}</Text> every month, your loan contract will finish in <Text style={styles.boldText}>{scenario.duration} months</Text>.
-                      </>
-                    )}
-                  </Text>
-                </View>
-              ))}
+              {scenarios.map((scenario, index) => {
+                // Calculate kilometers from payment amount using the reverse formula
+                const kilometers = Math.max((scenario.payment - 8000) / 10, 0);
+                return (
+                  <View style={styles.slide} key={index}>
+                    <Text style={[styles.modalTitle, language === 'ur' && styles.urduModalTitle]}>
+                      {language === 'ur' ? (
+                        <>
+                          اگر آپ ہر مہینے اوسطاً <Text style={styles.boldText}>{formatPKR(Math.round(kilometers))} کلومیٹر</Text> چلاتے ہیں، جس کے نتیجے میں <Text style={styles.boldText}>{formatPKR(scenario.payment)} روپے</Text> فی مہینہ ادائیگی ہوتی ہے، تو آپ اپنا قرض <Text style={styles.boldText}>{scenario.duration} مہینوں</Text> میں ختم کر سکتے ہیں۔
+                        </>
+                      ) : (
+                        <>
+                          If you drive an average of <Text style={styles.boldText}>{formatPKR(Math.round(kilometers))} km</Text> each month, which results in a payment of <Text style={styles.boldText}>Rs. {formatPKR(scenario.payment)}</Text> per month, you can finish your loan in <Text style={styles.boldText}>{scenario.duration} months</Text>.
+                        </>
+                      )}
+                    </Text>
+                  </View>
+                );
+              })}
             </ScrollView>
 
             {/* Dot Indicator */}
@@ -208,24 +208,31 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  // New style for the info button to match the language toggle
-  fabInfo: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#374151',
+  // New style for the examples button - bigger and more visible
+  fabExamples: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderRadius: 999,
+    backgroundColor: '#3B82F6', // Blue color to make it more prominent
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.84,
+    elevation: 6,
+    minWidth: 140, // Ensure minimum width for better visibility
   },
   fabText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  fabExamplesText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
     letterSpacing: 0.5,
   },
   modalOverlay: {
@@ -238,7 +245,7 @@ const styles = StyleSheet.create({
     width: MODAL_WIDTH,
     backgroundColor: 'white',
     borderRadius: 16,
-    paddingVertical: 24,
+    paddingVertical: 32, // Increased vertical padding
     paddingHorizontal: 0, // No horizontal padding on the container
     alignItems: 'center',
     shadowColor: '#000',
@@ -246,6 +253,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+    maxHeight: '80%', // Prevent modal from being too tall on small screens
   },
   closeButton: {
     position: 'absolute',
@@ -258,8 +266,9 @@ const styles = StyleSheet.create({
     width: MODAL_WIDTH,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    height: 150, // Give slides a consistent height
+    paddingHorizontal: 32, // Increased horizontal padding
+    paddingVertical: 20, // Added vertical padding
+    minHeight: 120, // Minimum height to ensure proper spacing
   },
   modalTitle: {
     fontSize: 20,
@@ -279,7 +288,8 @@ const styles = StyleSheet.create({
   dotContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 16,
+    marginTop: 20,
+    marginBottom: 8,
   },
   dot: {
     width: 8,
