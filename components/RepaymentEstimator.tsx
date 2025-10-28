@@ -264,6 +264,7 @@ const styles = StyleSheet.create({
     fontWeight: Platform.OS === 'web' ? '700' : '800',
     textAlign: 'center',
     color: '#1F2937',
+    marginBottom: 4, // Add spacing below km text
   },
   buttonRow: {
     flexDirection: 'row',
@@ -370,12 +371,15 @@ const styles = StyleSheet.create({
     fontWeight: Platform.OS === 'web' ? '800' : '900',
     color: '#1F2937',
     textAlign: 'center',
+    marginBottom: 4, // Add spacing below repayment text
   },
   perMonthText: {
     fontSize: 22, // Smaller font size
     color: '#6B7280', // Gray color
     textAlign: 'center',
     fontWeight: '500',
+    lineHeight: 32, // <-- ADD THIS
+    // marginTop: 2, // <-- REMOVE THIS
   },
   valueAndSuffixContainer: {
     alignItems: 'center', // Center the text horizontally
