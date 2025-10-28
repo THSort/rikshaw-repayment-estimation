@@ -289,8 +289,8 @@ const styles = StyleSheet.create({
   dotContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 20,
-    marginBottom: 8,
+    marginTop: 10,
+    // marginBottom: 8,
   },
   dot: {
     width: 8,
