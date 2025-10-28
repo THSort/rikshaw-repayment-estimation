@@ -8,7 +8,7 @@ import { Language, getTranslations } from './i18n';
 
 // Get the width of the screen to set the slide width
 const { width } = Dimensions.get('window');
-const MODAL_WIDTH = 400; // Increased width to prevent content overlap
+const MODAL_WIDTH = Math.min(width * 0.9, 400); // Responsive width: 90% of screen width, max 400px
 
 function AppInner() {
   const [language, setLanguage] = useState<Language>('ur');
@@ -254,6 +254,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
     maxHeight: '80%', // Prevent modal from being too tall on small screens
+    marginHorizontal: 16, // Add horizontal margin to prevent edge overflow
   },
   closeButton: {
     position: 'absolute',
@@ -266,7 +267,7 @@ const styles = StyleSheet.create({
     width: MODAL_WIDTH,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 32, // Increased horizontal padding
+    paddingHorizontal: 24, // Responsive horizontal padding
     paddingVertical: 20, // Added vertical padding
     minHeight: 120, // Minimum height to ensure proper spacing
   },
