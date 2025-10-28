@@ -169,7 +169,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
         <Text style={[styles.kmText, lang === 'ur' && styles.rtlText, { color: trackColor }]}>
           {formatNumberByLanguage(kilometers, lang)} {t.kmSuffix}
         </Text>
-        <Text style={[styles.perMonthText, lang === 'ur' && styles.rtlText, lang === 'ur' && {fontSize: 26}]}>
+        <Text style={[styles.perMonthText, lang === 'ur' && styles.rtlText, lang === 'ur' && {fontSize: 26, lineHeight: 26}]}>
           {t.perMonthSuffix}
         </Text>
       </View>
@@ -242,7 +242,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
           <Text style={[styles.repaymentText, lang === 'ur' && styles.rtlText, { color: trackColor }]}>
             {formatPKR(repayment, lang)} {t.currencySuffix}
           </Text>
-          <Text style={[styles.perMonthText, lang === 'ur' && styles.rtlText, lang === 'ur' && {fontSize: 26}]}>
+          <Text style={[styles.perMonthText, lang === 'ur' && styles.rtlText, lang === 'ur' && {fontSize: 26, lineHeight: 26}]}>
             {t.perMonthSuffix}
           </Text>
         </View>
@@ -261,6 +261,7 @@ const styles = StyleSheet.create({
   },
   kmText: {
     fontSize: 40,
+    lineHeight: 40,
     fontWeight: Platform.OS === 'web' ? '700' : '800',
     textAlign: 'center',
     color: '#1F2937',
@@ -288,8 +289,8 @@ const styles = StyleSheet.create({
   adjustButtonText: {
     color: '#FFFFFF',
     fontSize: 24,
-    fontWeight: 'bold',
     lineHeight: 24,
+    fontWeight: 'bold',
   },
   sliderContainer: {
     width: '100%',
@@ -362,12 +363,14 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 28,
+    lineHeight: 28,
     fontWeight: '600',
     marginBottom: 8,
     color: '#374151',
   },
   repaymentText: {
     fontSize: 40,
+    lineHeight: 40,
     fontWeight: Platform.OS === 'web' ? '800' : '900',
     color: '#1F2937',
     textAlign: 'center',
@@ -375,10 +378,10 @@ const styles = StyleSheet.create({
   },
   perMonthText: {
     fontSize: 22, // Smaller font size
+    lineHeight: 22, // <-- ADD THIS
     color: '#6B7280', // Gray color
     textAlign: 'center',
     fontWeight: '500',
-    lineHeight: 32, // <-- ADD THIS
     // marginTop: 2, // <-- REMOVE THIS
   },
   valueAndSuffixContainer: {
