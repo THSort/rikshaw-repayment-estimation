@@ -257,12 +257,12 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     paddingHorizontal: 12,
-    paddingTop: 24,
-    paddingBottom: 8,
+    // paddingTop: 24,
+    // paddingBottom: 8,
   },
   kmText: {
     fontSize: 40,
-    lineHeight: 44,
+    lineHeight: 50,
     fontWeight: Platform.OS === 'web' ? '700' : '800',
     textAlign: 'center',
     color: '#1F2937',
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
   },
   repaymentText: {
     fontSize: 40,
-    lineHeight: 44,
+    lineHeight: 50,
     fontWeight: Platform.OS === 'web' ? '800' : '900',
     color: '#1F2937',
     textAlign: 'center',

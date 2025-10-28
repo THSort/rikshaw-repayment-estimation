@@ -226,14 +226,14 @@ const styles = StyleSheet.create({
   fabText: {
     color: '#FFFFFF',
     fontSize: 16,
-    lineHeight: 16,
+    lineHeight: 20,
     fontWeight: '800',
     letterSpacing: 0.5,
   },
   fabExamplesText: {
     color: '#FFFFFF',
     fontSize: 18,
-    lineHeight: 18,
+    lineHeight: 22,
     fontWeight: '700',
     letterSpacing: 0.5,
   },
@@ -277,11 +277,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textAlign: 'center',
     color: '#374151',
-    lineHeight: 20,
+    lineHeight: 28,
   },
   urduModalTitle: {
     fontSize: 22,
-    lineHeight: 22,
+    lineHeight: 36,
     fontFamily: Platform.OS === 'android' ? 'NotoNastaliqUrdu-Regular' : 'System', // Example font
   },
   boldText: {
