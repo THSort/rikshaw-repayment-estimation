@@ -9,7 +9,7 @@ export type AppTranslations = {
   currencySuffix: string;
   toggleLanguageA11y: string;
   perMonthSuffix: string;
-  infoSlideText: string; // <-- 1. Add this line
+  infoSlideText: string; 
   seeExamples: string;
 };
 

@@ -5,15 +5,11 @@ import { getTranslations, Language } from '../i18n';
 import DashedLine from 'react-native-dashed-line';
 
 const Thumb: React.FC<{ color: string; active: boolean }> = React.memo(({ color }) => {
-  // You can keep the loadedOnce ref if you want; not necessary though.
-  // const loadedOnce = React.useRef(false);
   return (
     <Image
       key={color}
       source={require('../assets/rickshaw.png')}
-      // Fill the 45x35 box from thumbStyle
       style={{ width: 45, height: 35, resizeMode: 'contain', tintColor: color, transform: 'scaleY(1.4) scaleX(1.25)' }}
-      // onLoad={() => { if (!loadedOnce.current) { loadedOnce.current = true; console.log('loaded once'); } }}
     />
   );
 });
@@ -90,29 +86,16 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
   const [isSliderActive, setIsSliderActive] = useState<boolean>(false);
   const t = useMemo(() => getTranslations(lang), [lang]);
 
-
-
-
-  // Check if running on iOS (including iOS Safari on web)
-  const isIOS = useMemo(() => {
-    if (Platform.OS === 'ios') return true;
-    if (Platform.OS === 'web') {
-      return /iPad|iPhone|iPod/.test(navigator.userAgent);
-    }
-    return false;
-  }, []);
-
   const repayment = useMemo(() => calculateRepayment(kilometers), [kilometers]);
 
   const trackColor = useMemo(() => {
-    if (kilometers < 200) return '#FACC15'; // yellow-400
-    if (kilometers < 3200) return '#3B82F6'; // blue-500
-    return '#10B981'; // emerald-500
+    if (kilometers < 200) return '#FACC15'; 
+    if (kilometers < 3200) return '#3B82F6'; 
+    return '#10B981'; 
   }, [kilometers, sliderValue]);
 
-  // Calculate boundary positions for repayment bounds using hybrid mapping
-  const lowerBoundKm = 200; // where repayment stops being minimum
-  const upperBoundKm = 3200; // where repayment stops increasing
+  const lowerBoundKm = 200; 
+  const upperBoundKm = 3200; 
   const lowerBoundPosition = kmToSlider(lowerBoundKm, MAX_KM) * 100;
   const upperBoundPosition = kmToSlider(upperBoundKm, MAX_KM) * 100;
 
@@ -132,13 +115,11 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
     if (onValueChange) onValueChange(clamped, calculateRepayment(clamped));
   };
 
-  // Simple 5-step increment functions (current client requirement)
   const handleIncrementSimple = () => {
     const step = 5;
     
-    // If current value is not divisible by 5, snap to nearest divisible value first
     if (kilometers % step !== 0) {
-      const snapped = Math.ceil(kilometers / step) * step; // Round up to next multiple of 5
+      const snapped = Math.ceil(kilometers / step) * step; 
       const clamped = Math.min(snapped, MAX_KM);
       handleDirectKmChange(clamped);
       return;
@@ -151,9 +132,8 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
   const handleDecrementSimple = () => {
     const step = 5;
     
-    // If current value is not divisible by 5, snap to nearest divisible value first
     if (kilometers % step !== 0) {
-      const snapped = Math.floor(kilometers / step) * step; // Round down to previous multiple of 5
+      const snapped = Math.floor(kilometers / step) * step; 
       const clamped = Math.max(snapped, 0);
       handleDirectKmChange(clamped);
       return;
@@ -192,11 +172,7 @@ export const RepaymentEstimator: React.FC<RepaymentEstimatorProps> = ({
                 minimumTrackTintColor={trackColor}
                 maximumTrackTintColor="#374151"
                 />
-              {/* Boundary markers */}
-              {/* <View style={[styles.boundaryLine, { marginLeft: 30, left: `${lowerBoundPosition}%` }]} /> */}
               <DashedLine dashColor='gray' style={[styles.boundaryLine, { marginLeft: 31, left: `${lowerBoundPosition}%` }]} axis='vertical' dashLength={5} />
-
-              {/* <View style={[styles.boundaryLine, { left: `${upperBoundPosition}%` }]} /> */}
               <DashedLine dashColor='gray' style={[styles.boundaryLine, { marginLeft: -3, left: `${upperBoundPosition}%` }]}  axis='vertical' dashLength={5} />
             </View>
           </View>
@@ -257,8 +233,6 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     paddingHorizontal: 12,
-    // paddingTop: 24,
-    // paddingBottom: 8,
   },
   kmText: {
     fontSize: 40,
@@ -266,7 +240,7 @@ const styles = StyleSheet.create({
     fontWeight: Platform.OS === 'web' ? '700' : '800',
     textAlign: 'center',
     color: '#1F2937',
-    marginBottom: 4, // Add spacing below km text
+    marginBottom: 4, 
   },
   buttonRow: {
     flexDirection: 'row',
@@ -315,10 +289,7 @@ const styles = StyleSheet.create({
     width: 2,
     backgroundColor: 'transparent',
     opacity: 1,
-    // borderStyle: 'dashed',
     borderWidth: 0,
-    // borderLeftWidth: 2,
-    // borderLeftColor: '#6B7280',
     borderRightWidth: 0,
     borderTopWidth: 0,
     borderBottomWidth: 0,
@@ -375,19 +346,18 @@ const styles = StyleSheet.create({
     fontWeight: Platform.OS === 'web' ? '800' : '900',
     color: '#1F2937',
     textAlign: 'center',
-    marginBottom: 4, // Add spacing below repayment text
+    marginBottom: 4, 
   },
   perMonthText: {
-    fontSize: 22, // Smaller font size
-    lineHeight: 26, // <-- ADD THIS
-    color: '#6B7280', // Gray color
+    fontSize: 22, 
+    lineHeight: 26, 
+    color: '#6B7280', 
     textAlign: 'center',
     fontWeight: '500',
-    // marginTop: 2, // <-- REMOVE THIS
   },
   valueAndSuffixContainer: {
-    alignItems: 'center', // Center the text horizontally
-    marginBottom: 16, // Add some space below this block
+    alignItems: 'center',
+    marginBottom: 16,
   },
 });
 
